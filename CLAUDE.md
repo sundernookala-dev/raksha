@@ -1,89 +1,71 @@
 # Raksha — Project Context for Claude Code
 
 ## What Raksha Is
-Sunder's personal Indian Defence Sector investment dashboard. Runs locally on iMac.
-- **Listed Stocks** — Nifty Defence Index stocks with prices, charts, financials, ROE, ROCE, P/E
-- **Defence News** — Calendar view of news from 8 RSS feeds (ET Defence, IDRW, LiveFist, etc.)
-- **Startups** — Indian defence startups with funding, investors, revenue data
-- **Model Portfolio** — 15-20 stock recommendations with weights, corpus allocation, XIRR tracking
-- **Portfolio Rebalancing** — Monthly Buy/Hold/Sell recommendations
-- **Ratio Analysis** — Compare 3-5 stocks across Balance Sheet, Cash Flow, P&L
-
-⚠️ This is Sunder's REAL money. Be conservative. Never hallucinate financial data.
+Indian Defence Sector Investment Dashboard. Shows stock data for defence companies and aggregates defence news from 8 RSS feeds. Built for tracking India's defence sector stocks and news in one place.
 
 ## Location
 ```
 ~/raksha/
-├── proxy.cjs        ← Node.js backend proxy (port 3002)
-├── raksha-app.jsx   ← React frontend (entire app in one file)
-├── index.html       ← Loads the React app via CDN
-├── package.json
-└── CLAUDE.md
 ```
 
 ## Tech Stack
-- **Frontend**: React 18 (loaded via CDN, no build step needed)
-- **Backend**: Node.js proxy (`proxy.cjs`) — pure Node, no npm packages needed
-- **Stock Data**: IndianAPI (`stock.indianapi.in`) — proxied through backend
-- **News**: 8 RSS feeds — ET Defence, IDRW, Indian Defence News, LiveFist, LiveMint, Hindu BL, India Strategic, Defence Blog
-- **Charts**: Recharts (CDN)
-- **Ports**: Proxy on 3002, frontend served separately
+- **Language**: Node.js (no framework, plain HTTP module)
+- **Frontend**: Static HTML + JSX (`index.html`, `raksha-app.jsx`) served via `npx serve`
+- **Backend/Proxy**: `proxy.cjs` — a Node.js proxy server
+- **Stock data**: Proxies requests to `stock.indianapi.in`
+- **News**: Fetches and filters 8 Indian defence RSS feeds
 
-## How to Run
+## Ports
+| Service | Port |
+|---------|------|
+| Frontend (static files) | 3001 |
+| Proxy (backend) | 3002 |
 
-### Start the proxy (backend):
+## How to Start
+**Easiest way** — double-click `Start_Raksha.command` in Finder.
+
+**Manual way:**
 ```bash
 cd ~/raksha
-node proxy.cjs
-```
 
-### Serve the frontend:
-Open a second Terminal tab:
-```bash
-cd ~/raksha
-npx serve . -p 3001
-```
-Then open http://localhost:3001 in browser.
+# Kill anything already on the ports first
+lsof -ti:3002 | xargs kill -9 2>/dev/null || true
+lsof -ti:3001 | xargs kill -9 2>/dev/null || true
 
-### Or open index.html directly:
-```bash
-open ~/raksha/index.html
+# Start the proxy
+node proxy.cjs &
+
+# Serve the frontend
+npx serve . -p 3001 &
+
+# Open in browser
+open http://localhost:3001
 ```
-Note: Some features may not work when opened directly due to CORS. Use `npx serve` for full functionality.
 
 ## How to Stop
 ```bash
-# Stop proxy
-lsof -ti:3002 | xargs kill -9
-
-# Stop frontend server
 lsof -ti:3001 | xargs kill -9
+lsof -ti:3002 | xargs kill -9
 ```
 
 ## Key Files
-- `proxy.cjs` — fetches stock data from IndianAPI, parses RSS news feeds, caches results 10 min
-- `raksha-app.jsx` — entire React frontend (592 lines), all UI components inside
-- `index.html` — loads React + Babel + Recharts from CDN, mounts the app
+| File | Purpose |
+|------|---------|
+| `proxy.cjs` | Backend proxy — handles stock API calls and RSS news fetching |
+| `index.html` | Frontend entry point |
+| `raksha-app.jsx` | Main frontend app (React JSX) |
+| `Start_Raksha.command` | Double-click launcher for Mac |
+| `package.json` | Project metadata and npm scripts |
 
-## IndianAPI
-- Host: `stock.indianapi.in`
-- The proxy forwards all requests to this API
-- No API key configured yet — add to proxy.cjs headers if needed
-
-## Nifty Defence Index Stocks (hardcoded in raksha-app.jsx)
-BEL, HAL, SOLARINDS, MAZDOCK, BHARATFORG, BDL, COCHINSHIP, GRSE, DATAPATTNS, ZENTEC, BEML, MTAR, ASTRAMICRO, DYNAMATECH, MIDHANI, PARAS, CYIENTDLM
-
-## News RSS Feeds (in proxy.cjs)
-ET Defence, IDRW, Indian Defence News, LiveFist Defence, LiveMint, Hindu BL, India Strategic, Defence Blog
+## What the Proxy Does
+- **Stock data**: Passes through API calls to `stock.indianapi.in` (requires an API key in the request headers)
+- **Defence news** (`/rss/defence-news`): Fetches RSS from 8 sources, filters articles by defence keywords, deduplicates, sorts by date, and caches results for 10 minutes
+  - Add `?fresh=1` to force a cache refresh
+- **RSS Sources**: ET Defence, IDRW, Indian Defence News, LiveFist Defence, LiveMint, Hindu BL, India Strategic, Defence Blog
 
 ## What NOT to Touch
-- Never fabricate stock prices or financial data
-- Never change the API_HOST without testing
-- Keep the news cache TTL (10 min) to avoid hammering RSS feeds
+- Any `.env` files — API keys live there
+- `proxy.cjs` API_HOST and RSS feed list without understanding the impact
 
-## Common Tasks Claude Code Will Do
-- Add new stocks to NIFTY list in raksha-app.jsx
-- Add new RSS feeds to proxy.cjs
-- Fix API fetch errors
-- Improve charts or UI sections
-- Add new portfolio features
+---
+*Updated 2026-05-18 from reading proxy.cjs and Start_Raksha.command*
