@@ -1,0 +1,10 @@
+{
+  "name": "raksha",
+  "version": "0.1.0",
+  "description": "Raksha — Indian Defence Sector Investment Dashboard",
+  "scripts": {
+    "start": "node proxy.cjs",
+    "dev": "node proxy.cjs"
+  },
+  "dependencies": {}
+}

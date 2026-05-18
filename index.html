@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Raksha — Indian Defence Investment Dashboard</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/recharts@2.12.7/umd/Recharts.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; }
+    #root { min-height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script>
+    // Make React hooks available globally so the JSX file can use them
+    // without needing real ES module imports
+    const { useState, useEffect, useCallback, useRef, useMemo } = React;
+    window.useState = useState;
+    window.useEffect = useEffect;
+    window.useCallback = useCallback;
+    window.useRef = useRef;
+    window.useMemo = useMemo;
+  </script>
+
+  <script type="text/babel" data-presets="react" data-plugins="transform-modules-umd">
+    // Stub out the import so Babel doesn't fail on it
+  </script>
+
+  <script>
+    // Fetch and inject the JSX, stripping the import line before Babel processes it
+    fetch('raksha-app.jsx')
+      .then(r => r.text())
+      .then(src => {
+        // Remove the import line and the export default keyword
+        src = src.replace(/^import\s.*$/m, '');
+        src = src.replace('export default function App()', 'function App()');
+
+        const script = document.createElement('script');
+        script.type = 'text/babel';
+        script.setAttribute('data-presets', 'react');
+        script.text = src + '\n\nconst root = ReactDOM.createRoot(document.getElementById("root")); root.render(React.createElement(App));';
+        document.body.appendChild(script);
+        Babel.transformScriptTags();
+      });
+  </script>
+</body>
+</html>
